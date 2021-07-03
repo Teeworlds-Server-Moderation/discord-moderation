@@ -23,3 +23,5 @@ They may:
     - log any event
     - react to a specific event (detect VPNs of joining players, abort kickvotes)
 
+
+This straight forward architecture may allow to replace a lot of independent microservices with a single clean processing function.
