@@ -50,7 +50,6 @@ func init() {
 			brokerSub.Close()
 			brokerPub.Close()
 		}
-		os.Exit(0)
 	}()
 	eventProcessors = make([]processors.EventProcessor, 0, 2)
 }
