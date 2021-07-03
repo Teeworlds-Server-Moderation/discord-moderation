@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/Teeworlds-Server-Moderation/common/amqp"
-	. "github.com/Teeworlds-Server-Moderation/common/events"
+	"github.com/Teeworlds-Server-Moderation/common/events"
 	"github.com/Teeworlds-Server-Moderation/common/topics"
 	"github.com/Teeworlds-Server-Moderation/discord-log/config"
 	"github.com/Teeworlds-Server-Moderation/discord-log/processors"
@@ -87,15 +87,15 @@ func initQueuesAndExchanges(qcb QueueCreateBinder) {
 	createQueueAndBindToExchanges(
 		qcb,
 		QueueName,
-		TypeChat,
-		TypeChatTeam,
-		TypeChatWhisper,
-		TypeVoteKickStarted,
-		TypeVoteSpecStarted,
-		TypeVoteOptionStarted,
-		TypeMapChanged,
-		TypePlayerJoined,
-		TypePlayerLeft,
+		events.TypeChat,
+		events.TypeChatTeam,
+		events.TypeChatWhisper,
+		events.TypeVoteKickStarted,
+		events.TypeVoteSpecStarted,
+		events.TypeVoteOptionStarted,
+		events.TypeMapChanged,
+		events.TypePlayerJoined,
+		events.TypePlayerLeft,
 		topics.Broadcast,
 	)
 }
