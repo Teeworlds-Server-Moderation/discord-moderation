@@ -4,19 +4,19 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/signal"
 	"regexp"
 	"strconv"
 	"sync"
-	"syscall"
 
 	"github.com/diamondburned/arikawa/v2/discord"
 	configo "github.com/jxsl13/simple-configo"
 	"github.com/jxsl13/simple-configo/parsers"
+	"github.com/jxsl13/simple-configo/unparsers"
 )
 
 var (
-	cfg *config
+	cfg        *config
+	envFileKey = "ENV_FILE"
 )
 
 func Get() *config {
@@ -28,25 +28,39 @@ func Get() *config {
 		addressToChannel:    make(map[string]discord.ChannelID),
 		channelToAddress:    make(map[discord.ChannelID]string),
 	}
-	unparse, err := configo.ParseWithUnparse(cfg, configo.GetEnv())
+
+	err := configo.ParseEnvFileOrEnv(cfg, "./.env")
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		err = configo.ParseEnvFileOrEnv(cfg, envFileKey)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+	} else {
+		// in case we did use the ./.env file, set the fenvironment variable to that
+		// value
+		os.Setenv(envFileKey, "./.env")
 	}
+
 	err = cfg.init()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	// handle unparsing at process termination
-	go func(onClose func() error) {
-		notify := make(chan os.Signal, 1)
-		signal.Notify(notify, os.Interrupt, syscall.SIGTERM)
-		<-notify
-		log.Println("Saving configuration...")
-		onClose()
-	}(unparse)
+	configo.UnparseValidateOnSignal(cfg, func(env map[string]string, err error) {
+		// this callback is called after the configuration has been unparsed and put into an
+		// environment map.
+		// logging
+		filePath := os.Getenv(envFileKey)
+		log.Println("Saving configuration to ", filePath)
+
+		// after unparsing, write to file found in the environment variable ENV_FILE
+		// write file
+		callback := configo.UnparseEnvFile(filePath)
+		callback(env, err)
+	})
+
 	return cfg
 }
 
@@ -130,6 +144,7 @@ func (c *config) AddLink(econAddr string, channelID discord.ChannelID) error {
 
 	// neither exist -> create a link
 	c.addressToChannel[econAddr] = channelID
+	c.addressToChannelStr[econAddr] = strconv.FormatUint(uint64(channelID), 10)
 	c.channelToAddress[channelID] = econAddr
 	return nil
 }
@@ -148,6 +163,7 @@ func (c *config) RemoveAddressLink(econAddr string) error {
 		return fmt.Errorf("address not found %s", econAddr)
 	}
 
+	delete(c.addressToChannelStr, econAddr)
 	delete(c.addressToChannel, econAddr)
 	delete(c.channelToAddress, channel)
 	return nil
@@ -166,6 +182,7 @@ func (c *config) RemoveChannelLink(channelID discord.ChannelID) error {
 
 	delete(c.channelToAddress, channelID)
 	delete(c.addressToChannel, addr)
+	delete(c.addressToChannelStr, addr)
 	return nil
 }
 
@@ -176,56 +193,53 @@ func (c *config) Name() string {
 func (c *config) Options() configo.Options {
 	return configo.Options{
 		{
-			Key:          "ENV_FILE",
-			Description:  "path to the location of your .env configuration file (default: ./.env)",
-			Mandatory:    true,
-			DefaultValue: "./.env",
-			ParseFunction: parsers.ReadDotEnvFileMulti(
-				configo.Options{
-					{
-						Key:           "DISCORD_TOKEN",
-						Description:   "Create a Discord app at https://discord.com/developers/applications -> Bot -> Token",
-						Mandatory:     true,
-						ParseFunction: parsers.String(&c.DiscordToken),
-					},
-					{
-						Key:           "PAIR_DELIMITER",
-						Description:   "address->channel<delimiter>address2->channel2<delimiter>...",
-						DefaultValue:  ",",
-						ParseFunction: parsers.String(&c.pairDelimiter),
-					},
-					{
-						Key:           "KEY_VALUE_DELIMITER",
-						Description:   "address<delimiter>channel;address2<delimiter>channel2;...",
-						DefaultValue:  "->",
-						ParseFunction: parsers.String(&c.keyValueDelimiter),
-					},
-					{
-						Key:           "ADDRESS_CHANNEL_MAPPING",
-						Description:   "ip:econ_port->discord_channel_id,ip:econ_port2->",
-						Mandatory:     true,
-						ParseFunction: parsers.Map(&c.addressToChannelStr, &c.pairDelimiter, &c.keyValueDelimiter),
-					},
-					{
-						Key:           "BROKER_ADDRESS",
-						Description:   "The address of your broker in the container is rabbitmq:5672",
-						DefaultValue:  "localhost:5672",
-						ParseFunction: parsers.String(&c.BrokerAddress),
-					},
-					{
-						Key:           "BROKER_USER",
-						Description:   "The user that can access the broker, default: tw-admin",
-						DefaultValue:  "tw-admin",
-						ParseFunction: parsers.String(&c.BrokerUsername),
-					},
-					{
-						Key:           "BROKER_PASSWORD",
-						Mandatory:     true,
-						Description:   "The password to access the broker with the corresonding username.",
-						ParseFunction: parsers.String(&c.BrokerPassword),
-					},
-				}..., // slice to var args
-			),
+			Key:             "DISCORD_TOKEN",
+			Description:     "Create a Discord app at https://discord.com/developers/applications -> Bot -> Token",
+			Mandatory:       true,
+			ParseFunction:   parsers.String(&c.DiscordToken),
+			UnparseFunction: unparsers.String(&c.DiscordToken),
+		},
+		{
+			Key:             "PAIR_DELIMITER",
+			Description:     "address->channel<delimiter>address2->channel2<delimiter>...",
+			DefaultValue:    ",",
+			ParseFunction:   parsers.String(&c.pairDelimiter),
+			UnparseFunction: unparsers.String(&c.pairDelimiter),
+		},
+		{
+			Key:             "KEY_VALUE_DELIMITER",
+			Description:     "address<delimiter>channel;address2<delimiter>channel2;...",
+			DefaultValue:    "->",
+			ParseFunction:   parsers.String(&c.keyValueDelimiter),
+			UnparseFunction: unparsers.String(&c.keyValueDelimiter),
+		},
+		{
+			Key:             "ADDRESS_CHANNEL_MAPPING",
+			Description:     "ip:econ_port->discord_channel_id,ip:econ_port2->",
+			Mandatory:       true,
+			ParseFunction:   parsers.Map(&c.addressToChannelStr, &c.pairDelimiter, &c.keyValueDelimiter),
+			UnparseFunction: unparsers.Map(&c.addressToChannelStr, &c.pairDelimiter, &c.keyValueDelimiter),
+		},
+		{
+			Key:             "BROKER_ADDRESS",
+			Description:     "The address of your broker in the container is rabbitmq:5672",
+			DefaultValue:    "localhost:5672",
+			ParseFunction:   parsers.String(&c.BrokerAddress),
+			UnparseFunction: unparsers.String(&c.BrokerAddress),
+		},
+		{
+			Key:             "BROKER_USER",
+			Description:     "The user that can access the broker, default: tw-admin",
+			DefaultValue:    "tw-admin",
+			ParseFunction:   parsers.String(&c.BrokerUsername),
+			UnparseFunction: unparsers.String(&c.BrokerUsername),
+		},
+		{
+			Key:             "BROKER_PASSWORD",
+			Mandatory:       true,
+			Description:     "The password to access the broker with the corresonding username.",
+			ParseFunction:   parsers.String(&c.BrokerPassword),
+			UnparseFunction: unparsers.String(&c.BrokerPassword),
 		},
 	}
 }
