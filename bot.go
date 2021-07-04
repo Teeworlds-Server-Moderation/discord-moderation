@@ -16,6 +16,8 @@ func (b *Bot) Ping(msg *gateway.MessageCreateEvent) (string, error) {
 	return "Pong!", nil
 }
 
+// Link established a link between a discord channel and a target econ address that can or cannot be correct
+// in case th econ address matches any known addresses, its events are then logged to that specific discord channel.
 func (b *Bot) Link(msg *gateway.MessageCreateEvent, econAddr string) (string, error) {
 	err := config.Get().AddLink(econAddr, msg.ChannelID)
 	if err != nil {
@@ -24,6 +26,8 @@ func (b *Bot) Link(msg *gateway.MessageCreateEvent, econAddr string) (string, er
 	return fmt.Sprintf("established connection between this channel and %s", econAddr), nil
 }
 
+// Unlink removes the link between the current channel and its connected econ address.
+// no more messages from that address are received anymore.
 func (b *Bot) Unlink(msg *gateway.MessageCreateEvent) (string, error) {
 	addr, err := config.Get().RemoveChannelLink(msg.ChannelID)
 	if err != nil {
