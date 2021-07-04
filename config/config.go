@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"regexp"
@@ -42,6 +43,7 @@ func Get() *config {
 	go func(onClose func() error) {
 		notify := make(chan os.Signal, 1)
 		signal.Notify(notify, os.Interrupt, syscall.SIGTERM)
+		log.Println("Saving configuration...")
 		onClose()
 	}(unparse)
 	return cfg
