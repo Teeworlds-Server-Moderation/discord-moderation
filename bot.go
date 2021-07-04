@@ -24,7 +24,7 @@ func (b *Bot) Link(msg *gateway.MessageCreateEvent, econAddr string) (string, er
 	return fmt.Sprintf("established connection between this channel and %s", econAddr), nil
 }
 
-func Unlink(msg *gateway.MessageCreateEvent) (string, error) {
+func (b *Bot) Unlink(msg *gateway.MessageCreateEvent) (string, error) {
 	addr, err := config.Get().RemoveChannelLink(msg.ChannelID)
 	if err != nil {
 		return "", fmt.Errorf("failed to unlink channel: %s", err)
