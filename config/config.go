@@ -146,7 +146,7 @@ func (c *config) AddLink(econAddr string, channelID discord.ChannelID) error {
 // RemoveAddressLink removes the link via its econ address key value
 func (c *config) RemoveAddressLink(econAddr string) (discord.ChannelID, error) {
 	if !addrRegex.MatchString(econAddr) {
-		return fmt.Errorf("invalid address: %s", econAddr)
+		return 0, fmt.Errorf("invalid address: %s", econAddr)
 	}
 
 	c.Lock()
