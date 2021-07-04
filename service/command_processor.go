@@ -6,7 +6,7 @@ import (
 
 	"github.com/Teeworlds-Server-Moderation/common/amqp"
 	"github.com/Teeworlds-Server-Moderation/common/events"
-	"github.com/Teeworlds-Server-Moderation/discord-log/config"
+	"github.com/Teeworlds-Server-Moderation/discord-moderation/config"
 	"github.com/diamondburned/arikawa/v2/bot"
 	"github.com/diamondburned/arikawa/v2/gateway"
 )

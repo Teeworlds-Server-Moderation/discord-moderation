@@ -1,8 +1,8 @@
-module github.com/Teeworlds-Server-Moderation/discord-log
+module github.com/Teeworlds-Server-Moderation/discord-moderation
 
 go 1.16
 
-replace github.com/Teeworlds-Server-Moderation/discord-log => ./
+replace github.com/Teeworlds-Server-Moderation/discord-moderation => ./
 
 require (
 	github.com/Teeworlds-Server-Moderation/common v0.7.4

@@ -1,11 +1,10 @@
 package main
 
 import (
-	"github.com/Teeworlds-Server-Moderation/discord-log/config"
-	"github.com/Teeworlds-Server-Moderation/discord-log/processors"
-	"github.com/Teeworlds-Server-Moderation/discord-log/service"
+	"github.com/Teeworlds-Server-Moderation/discord-moderation/config"
+	"github.com/Teeworlds-Server-Moderation/discord-moderation/processors"
+	"github.com/Teeworlds-Server-Moderation/discord-moderation/service"
 	"github.com/diamondburned/arikawa/v2/bot"
-	"github.com/diamondburned/arikawa/v2/gateway"
 )
 
 func main() {
@@ -22,12 +21,4 @@ func main() {
 			return service.Start(ctx)
 		},
 	)
-}
-
-type Bot struct {
-	Ctx *bot.Context
-}
-
-func (b *Bot) Ping(*gateway.MessageCreateEvent) (string, error) {
-	return "Pong!", nil
 }

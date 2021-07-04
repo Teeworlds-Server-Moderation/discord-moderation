@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/Teeworlds-Server-Moderation/common/events"
-	"github.com/Teeworlds-Server-Moderation/discord-log/markdown"
+	"github.com/Teeworlds-Server-Moderation/discord-moderation/markdown"
 	"github.com/diamondburned/arikawa/v2/bot"
 	"github.com/diamondburned/arikawa/v2/discord"
 	a "github.com/streadway/amqp"

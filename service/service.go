@@ -9,8 +9,8 @@ import (
 	"github.com/Teeworlds-Server-Moderation/common/amqp"
 	"github.com/Teeworlds-Server-Moderation/common/events"
 	"github.com/Teeworlds-Server-Moderation/common/topics"
-	"github.com/Teeworlds-Server-Moderation/discord-log/config"
-	"github.com/Teeworlds-Server-Moderation/discord-log/processors"
+	"github.com/Teeworlds-Server-Moderation/discord-moderation/config"
+	"github.com/Teeworlds-Server-Moderation/discord-moderation/processors"
 	"github.com/diamondburned/arikawa/v2/bot"
 	"github.com/diamondburned/arikawa/v2/gateway"
 )
@@ -54,6 +54,7 @@ func init() {
 	eventProcessors = make([]processors.EventProcessor, 0, 2)
 }
 
+// Starts the srvice
 func Start(ctx *bot.Context) (err error) {
 	if initialized {
 		return nil
