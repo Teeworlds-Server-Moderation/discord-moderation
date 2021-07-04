@@ -38,7 +38,7 @@ func init() {
 	commandChan = make(chan gateway.MessageCreateEvent, 1024)
 
 	// cleanup upon application closure
-	notify = make(chan os.Signal)
+	notify = make(chan os.Signal, 1)
 	signal.Notify(notify, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-notify
