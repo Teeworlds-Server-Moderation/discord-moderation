@@ -14,7 +14,6 @@ func main() {
 	bot.Run(cfg.DiscordToken, &Bot{},
 		func(ctx *bot.Context) error {
 			ctx.HasPrefix = bot.NewPrefix("!")
-
 			// log to discord
 			service.AddEventProcessor(processors.DiscordLog)
 

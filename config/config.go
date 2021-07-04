@@ -144,7 +144,7 @@ func (c *config) AddLink(econAddr string, channelID discord.ChannelID) error {
 }
 
 // RemoveAddressLink removes the link via its econ address key value
-func (c *config) RemoveAddressLink(econAddr string) error {
+func (c *config) RemoveAddressLink(econAddr string) (discord.ChannelID, error) {
 	if !addrRegex.MatchString(econAddr) {
 		return fmt.Errorf("invalid address: %s", econAddr)
 	}
@@ -154,30 +154,30 @@ func (c *config) RemoveAddressLink(econAddr string) error {
 
 	channel, found := c.addressToChannel[econAddr]
 	if !found {
-		return fmt.Errorf("address not found %s", econAddr)
+		return 0, fmt.Errorf("address not found %s", econAddr)
 	}
 
 	delete(c.addressToChannelStr, econAddr)
 	delete(c.addressToChannel, econAddr)
 	delete(c.channelToAddress, channel)
-	return nil
+	return channel, nil
 }
 
 // RemoveChannelLink removes the channel via its channelID key
-func (c *config) RemoveChannelLink(channelID discord.ChannelID) error {
+func (c *config) RemoveChannelLink(channelID discord.ChannelID) (string, error) {
 
 	c.Lock()
 	defer c.Unlock()
 
 	addr, found := c.channelToAddress[channelID]
 	if !found {
-		return fmt.Errorf("channel not found %d", channelID)
+		return "", fmt.Errorf("channel not found %d", channelID)
 	}
 
 	delete(c.channelToAddress, channelID)
 	delete(c.addressToChannel, addr)
 	delete(c.addressToChannelStr, addr)
-	return nil
+	return addr, nil
 }
 
 func (c *config) Name() string {
