@@ -54,7 +54,8 @@ func Get() *config {
 // If you want to save any changed back to your config file, call this method
 // at the end of oyur main function.
 func Close() error {
-	fmt.Println("Saving configuration...")
+	fmt.Println()
+	log.Println("Saving configuration...")
 	return configo.UnparseEnvFile(cfg, envFileKey)
 }
 
