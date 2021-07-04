@@ -23,11 +23,12 @@ func eventProcessor(ctx *bot.Context, sub *amqp.Subscriber, queue string) {
 
 	for {
 		select {
-		case msg := <-messageChan:
-			processEvent(ctx, msg)
 		case <-notify:
+			// must be as the first case
 			log.Println("Closing event processor subroutine...")
 			return
+		case msg := <-messageChan:
+			processEvent(ctx, msg)
 		}
 	}
 }

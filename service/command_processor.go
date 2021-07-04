@@ -20,14 +20,15 @@ func commandProcessor(ctx *bot.Context, pub *amqp.Publisher, commands chan gatew
 	log.Println("Starting command processor...")
 	for {
 		select {
+		case <-notify:
+			// this must be at first, as it's the most important
+			log.Println("Closing command processor subroutine...")
+			return
 		case commandMsg := <-commands:
 			err := processCommand(commandMsg, ctx, pub)
 			if err != nil {
 				reply(ctx, commandMsg, err.Error())
 			}
-		case <-notify:
-			log.Println("Closing command processor subroutine...")
-			return
 		}
 	}
 }
