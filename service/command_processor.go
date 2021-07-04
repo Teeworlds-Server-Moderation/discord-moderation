@@ -32,12 +32,15 @@ func commandProcessor(ctx *bot.Context, pub *amqp.Publisher, commands chan gatew
 	}
 }
 
-func getEconAddr(command gateway.MessageCreateEvent) string {
-	return config.Get().ChannelToAddress[command.ChannelID]
+func getEconAddr(command gateway.MessageCreateEvent) (string, error) {
+	return config.Get().GetEconAddr(command.ChannelID)
 }
 
 func processCommand(command gateway.MessageCreateEvent, ctx *bot.Context, pub *amqp.Publisher) error {
-	econAddr := getEconAddr(command)
+	econAddr, err := getEconAddr(command)
+	if err != nil {
+		return err
+	}
 	cmdExecRequest := events.NewRequestCommandExecEvent()
 	cmdExecRequest.Command = strings.Trim(command.Content, " \n\r\t")
 	return pub.Publish("", econAddr, cmdExecRequest)

@@ -38,8 +38,11 @@ func getChannelID(msg a.Delivery) (id discord.ChannelID, eventType string, err e
 	if err != nil {
 		return 0, "", err
 	}
-
-	return config.Get().AddressToChannel[event.EventSource], event.Type, nil
+	value, err := config.Get().GetChannel(event.EventSource)
+	if err != nil {
+		return 0, event.Type, err
+	}
+	return value, event.Type, nil
 }
 
 func processEvent(ctx *bot.Context, msg a.Delivery) error {
