@@ -9,7 +9,10 @@ import (
 )
 
 func main() {
-	bot.Run(config.Get().DiscordToken, &Bot{},
+	cfg := config.Get()
+	defer config.Close()
+
+	bot.Run(cfg.DiscordToken, &Bot{},
 		func(ctx *bot.Context) error {
 			ctx.HasPrefix = bot.NewPrefix("!")
 

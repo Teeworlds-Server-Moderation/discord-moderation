@@ -24,6 +24,7 @@ func Get() *config {
 		return cfg
 	}
 	cfg = &config{
+		// actual config value kept in sync with the below value in order to write it back into a file
 		addressToChannelStr: make(map[string]string),
 		addressToChannel:    make(map[string]discord.ChannelID),
 		channelToAddress:    make(map[discord.ChannelID]string),
@@ -33,7 +34,7 @@ func Get() *config {
 	if err != nil {
 		err = configo.ParseEnvFileOrEnv(cfg, envFileKey)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			os.Exit(1)
 		}
 	} else {
@@ -44,24 +45,14 @@ func Get() *config {
 
 	err = cfg.init()
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
-
-	configo.UnparseValidateOnSignal(cfg, func(env map[string]string, err error) {
-		// this callback is called after the configuration has been unparsed and put into an
-		// environment map.
-		// logging
-		filePath := os.Getenv(envFileKey)
-		log.Println("Saving configuration to ", filePath)
-
-		// after unparsing, write to file found in the environment variable ENV_FILE
-		// write file
-		callback := configo.UnparseEnvFile(filePath)
-		callback(env, err)
-	})
-
 	return cfg
+}
+
+func Close() error {
+	return configo.UnparseEnvFile(cfg, envFileKey)
 }
 
 type config struct {
@@ -223,14 +214,14 @@ func (c *config) Options() configo.Options {
 		{
 			Key:             "BROKER_ADDRESS",
 			Description:     "The address of your broker in the container is rabbitmq:5672",
-			DefaultValue:    "localhost:5672",
+			Mandatory:       true,
 			ParseFunction:   parsers.String(&c.BrokerAddress),
 			UnparseFunction: unparsers.String(&c.BrokerAddress),
 		},
 		{
 			Key:             "BROKER_USER",
-			Description:     "The user that can access the broker, default: tw-admin",
-			DefaultValue:    "tw-admin",
+			Description:     "The user that can access the broker, e.g.: tw-admin",
+			Mandatory:       true,
 			ParseFunction:   parsers.String(&c.BrokerUsername),
 			UnparseFunction: unparsers.String(&c.BrokerUsername),
 		},
