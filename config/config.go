@@ -43,6 +43,7 @@ func Get() *config {
 	go func(onClose func() error) {
 		notify := make(chan os.Signal, 1)
 		signal.Notify(notify, os.Interrupt, syscall.SIGTERM)
+		<-notify
 		log.Println("Saving configuration...")
 		onClose()
 	}(unparse)
