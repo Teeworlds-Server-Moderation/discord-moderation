@@ -101,6 +101,16 @@ func (dvc *detectVPNConfig) PostParse() error {
 	if err != nil {
 		return err
 	}
+
+	dvc.rdb, err = goripr.NewClient(goripr.Options{
+		Addr:     dvc.redisAddress,
+		Password: dvc.redisPassword,
+		DB:       dvc.redisDatabase,
+	})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -124,7 +134,6 @@ func (dvc *detectVPNConfig) Options() configo.Options {
 		},
 		{
 			Key:             "REDIS_PASSWORD",
-			Mandatory:       true,
 			Description:     "Pasword used for the redis database, can be left empty.",
 			ParseFunction:   parsers.String(&dvc.redisPassword),
 			UnparseFunction: unparsers.String(&dvc.redisPassword),
@@ -139,7 +148,7 @@ func (dvc *detectVPNConfig) Options() configo.Options {
 		{
 			Key:             "DATA_PATH",
 			Description:     "Is the root folder that contains all of the data of this service.",
-			DefaultValue:    "data",
+			DefaultValue:    "./data",
 			ParseFunction:   parsers.String(&dvc.dataPath),
 			UnparseFunction: unparsers.String(&dvc.dataPath),
 		},
