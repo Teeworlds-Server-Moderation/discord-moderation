@@ -39,7 +39,7 @@ func getChannelID(msg a.Delivery) (id discord.ChannelID, eventType string, err e
 	if err != nil {
 		return 0, "", err
 	}
-	value, err := config.Get().GetChannel(event.EventSource)
+	value, err := config.Discord().GetChannel(event.EventSource)
 	if err != nil {
 		return 0, event.Type, err
 	}

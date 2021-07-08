@@ -1,29 +1,25 @@
-package processors
+package dclog
 
 import (
 	"fmt"
 	"strings"
 
 	"github.com/Teeworlds-Server-Moderation/common/events"
+	"github.com/Teeworlds-Server-Moderation/discord-moderation/config"
 	"github.com/Teeworlds-Server-Moderation/discord-moderation/markdown"
 	"github.com/diamondburned/arikawa/v2/bot"
 	"github.com/diamondburned/arikawa/v2/discord"
 	a "github.com/streadway/amqp"
 )
 
-var (
-	DiscordLogSkipJoinLeaveMessages = false
-	DiscordLogSkipWhisperMessages   = false
-)
-
 func DiscordLog(ctx *bot.Context, channelID discord.ChannelID, eventType string, msg a.Delivery) error {
 	switch eventType {
 	case events.TypePlayerJoined, events.TypePlayerLeft:
-		if DiscordLogSkipJoinLeaveMessages {
+		if config.Discord().GetSkipJoinLeaveMessages() {
 			return nil
 		}
 	case events.TypeChatWhisper:
-		if DiscordLogSkipWhisperMessages {
+		if config.Discord().GetSkipWhisperMessages() {
 			return nil
 		}
 	}

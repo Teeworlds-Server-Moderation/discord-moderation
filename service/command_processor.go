@@ -34,7 +34,7 @@ func commandProcessor(ctx *bot.Context, pub *amqp.Publisher, commands chan gatew
 }
 
 func getEconAddr(command gateway.MessageCreateEvent) (string, error) {
-	return config.Get().GetEconAddr(command.ChannelID)
+	return config.Discord().GetEconAddr(command.ChannelID)
 }
 
 func processCommand(command gateway.MessageCreateEvent, ctx *bot.Context, pub *amqp.Publisher) error {

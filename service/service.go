@@ -6,7 +6,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Teeworlds-Server-Moderation/common/amqp"
 	"github.com/Teeworlds-Server-Moderation/common/events"
 	"github.com/Teeworlds-Server-Moderation/common/topics"
 	"github.com/Teeworlds-Server-Moderation/discord-moderation/config"
@@ -21,10 +20,6 @@ var (
 
 	// notification when application is closed
 	notify chan os.Signal
-
-	// broker connections
-	brokerPub *amqp.Publisher
-	brokerSub *amqp.Subscriber
 
 	initialized = false
 )
@@ -46,10 +41,6 @@ func init() {
 
 		// graceful shutdown
 		close(commandChan)
-		if brokerSub != nil {
-			brokerSub.Close()
-			brokerPub.Close()
-		}
 	}()
 	eventProcessors = make([]processors.EventProcessor, 0, 2)
 }
@@ -60,17 +51,8 @@ func Start(ctx *bot.Context) (err error) {
 		return nil
 	}
 
-	cfg := config.Get()
-
-	brokerSub, err = amqp.NewSubscriber(cfg.BrokerAddress, cfg.BrokerUsername, cfg.BrokerPassword)
-	if err != nil {
-		return err
-	}
-
-	brokerPub, err = amqp.NewPublisher(cfg.BrokerAddress, cfg.BrokerUsername, cfg.BrokerPassword)
-	if err != nil {
-		return err
-	}
+	brokerSub := config.Broker().Subscriber()
+	brokerPub := config.Broker().Publisher()
 
 	initQueuesAndExchanges(brokerSub)
 	go eventProcessor(ctx, brokerSub, QueueName)
