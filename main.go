@@ -12,6 +12,7 @@ import (
 
 func main() {
 	defer config.Close()
+	defer service.Close()
 
 	bot.Run(config.Discord().Token, &Bot{},
 		func(ctx *bot.Context) error {

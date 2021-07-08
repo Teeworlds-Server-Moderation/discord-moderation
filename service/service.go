@@ -62,6 +62,10 @@ func Start(ctx *bot.Context) (err error) {
 	return nil
 }
 
+func Close() error {
+	return config.Broker().Subscriber().DeleteQueue(QueueName)
+}
+
 func AddEventProcessor(processor processors.EventProcessor) {
 	eventProcessors = append(eventProcessors, processor)
 }
